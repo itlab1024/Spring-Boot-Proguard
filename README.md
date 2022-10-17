@@ -79,97 +79,98 @@ guard官方其实并没有提供maven的插件依赖，官网默认的是gradle�
 完成后，我们target下就能看到打好的jar文件。使用jd-gui打开查看。
 ![](https://itlab1024-1256529903.cos.ap-beijing.myqcloud.com/202210151734967.png)
 可以看到，代码没有被混淆。
+
 # 代码混淆
 接下来我使用proguard实现代码混淆。主要是在pom中使用插件来实现。
 ```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.4</version>
-        <relativePath/> <!-- lookup parent from repository -->
-    </parent>
-    <groupId>com.itlab1024</groupId>
-    <artifactId>Spring-Boot-Proguard</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <name>Spring-Boot-Proguard</name>
-    <description>Spring-Boot-Proguard</description>
-    <properties>
-        <java.version>1.8</java.version>
-    </properties>
-    <dependencies>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
+  <?xml version="1.0" encoding="UTF-8"?>
+  <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+      <modelVersion>4.0.0</modelVersion>
+      <parent>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-parent</artifactId>
+          <version>2.7.4</version>
+          <relativePath/> <!-- lookup parent from repository -->
+      </parent>
+      <groupId>com.itlab1024</groupId>
+      <artifactId>Spring-Boot-Proguard</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+      <name>Spring-Boot-Proguard</name>
+      <description>Spring-Boot-Proguard</description>
+      <properties>
+          <java.version>1.8</java.version>
+      </properties>
+      <dependencies>
+          <dependency>
+              <groupId>org.springframework.boot</groupId>
+              <artifactId>spring-boot-starter-web</artifactId>
+          </dependency>
 
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+          <dependency>
+              <groupId>org.springframework.boot</groupId>
+              <artifactId>spring-boot-starter-test</artifactId>
+              <scope>test</scope>
+          </dependency>
+      </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>com.github.wvengen</groupId>
-                <artifactId>proguard-maven-plugin</artifactId>
-                <version>2.6.0</version>
-                <executions>
-                    <!-- 以下配置说明执行mvn的package命令时候，会执行proguard-->
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>proguard</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <!-- 就是输入Jar的名称，我们要知道，代码混淆其实是将一个原始的jar，生成一个混淆后的jar，那么就会有输入输出。 -->
-                    <injar>${project.build.finalName}.jar</injar>
-                    <!-- 输出jar名称，输入输出jar同名的时候就是覆盖，也是比较常用的配置。 -->
-                    <outjar>${project.build.finalName}.jar</outjar>
-                    <!-- 是否混淆 默认是true -->
-                    <obfuscate>true</obfuscate>
-                    <!-- 配置一个文件，通常叫做proguard.cfg,该文件主要是配置options选项，也就是说使用proguard.cfg那么options下的所有内容都可以移到proguard.cfg中 -->
-                    <proguardInclude>${project.basedir}/proguard.cfg</proguardInclude>
-                    <!-- 额外的jar包，通常是项目编译所需要的jar -->
-                    <libs>
-                        <lib>${java.home}/lib/rt.jar</lib>
-                        <lib>${java.home}/lib/jce.jar</lib>
-                        <lib>${java.home}/lib/jsse.jar</lib>
-                    </libs>
-                    <!-- 对输入jar进行过滤比如，如下配置就是对META-INFO文件不处理。 -->
-                    <inLibsFilter>!META-INF/**,!META-INF/versions/9/**.class</inLibsFilter>
-                    <!-- 这是输出路径配置，但是要注意这个路径必须要包括injar标签填写的jar -->
-                    <outputDirectory>${project.basedir}/target</outputDirectory>
-                    <!--这里特别重要，此处主要是配置混淆的一些细节选项，比如哪些类不需要混淆，哪些需要混淆-->
-                    <options>
-                        <!-- 可以在此处写option标签配置，不过我上面使用了proguardInclude，故而我更喜欢在proguard.cfg中配置 -->
-                    </options>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>repackage</goal>
-                        </goals>
-                        <configuration>
-                            <mainClass>com.itlab1024.proguard.SpringBootProguardApplication</mainClass>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
-</project>
+      <build>
+          <plugins>
+              <plugin>
+                  <groupId>com.github.wvengen</groupId>
+                  <artifactId>proguard-maven-plugin</artifactId>
+                  <version>2.6.0</version>
+                  <executions>
+                      <!-- 以下配置说明执行mvn的package命令时候，会执行proguard-->
+                      <execution>
+                          <phase>package</phase>
+                          <goals>
+                              <goal>proguard</goal>
+                          </goals>
+                      </execution>
+                  </executions>
+                  <configuration>
+                      <!-- 就是输入Jar的名称，我们要知道，代码混淆其实是将一个原始的jar，生成一个混淆后的jar，那么就会有输入输出。 -->
+                      <injar>${project.build.finalName}.jar</injar>
+                      <!-- 输出jar名称，输入输出jar同名的时候就是覆盖，也是比较常用的配置。 -->
+                      <outjar>${project.build.finalName}.jar</outjar>
+                      <!-- 是否混淆 默认是true -->
+                      <obfuscate>true</obfuscate>
+                      <!-- 配置一个文件，通常叫做proguard.cfg,该文件主要是配置options选项，也就是说使用proguard.cfg那么options下的所有内容都可以移到proguard.cfg中 -->
+                      <proguardInclude>${project.basedir}/proguard.cfg</proguardInclude>
+                      <!-- 额外的jar包，通常是项目编译所需要的jar -->
+                      <libs>
+                          <lib>${java.home}/lib/rt.jar</lib>
+                          <lib>${java.home}/lib/jce.jar</lib>
+                          <lib>${java.home}/lib/jsse.jar</lib>
+                      </libs>
+                      <!-- 对输入jar进行过滤比如，如下配置就是对META-INFO文件不处理。 -->
+                      <inLibsFilter>!META-INF/**,!META-INF/versions/9/**.class</inLibsFilter>
+                      <!-- 这是输出路径配置，但是要注意这个路径必须要包括injar标签填写的jar -->
+                      <outputDirectory>${project.basedir}/target</outputDirectory>
+                      <!--这里特别重要，此处主要是配置混淆的一些细节选项，比如哪些类不需要混淆，哪些需要混淆-->
+                      <options>
+                          <!-- 可以在此处写option标签配置，不过我上面使用了proguardInclude，故而我更喜欢在proguard.cfg中配置 -->
+                      </options>
+                  </configuration>
+              </plugin>
+              <plugin>
+                  <groupId>org.springframework.boot</groupId>
+                  <artifactId>spring-boot-maven-plugin</artifactId>
+                  <executions>
+                      <execution>
+                          <goals>
+                              <goal>repackage</goal>
+                          </goals>
+                          <configuration>
+                              <mainClass>com.itlab1024.proguard.SpringBootProguardApplication</mainClass>
+                          </configuration>
+                      </execution>
+                  </executions>
+              </plugin>
+          </plugins>
+      </build>
+  </project>
 ```
 
 再新建个mvc的controller。
